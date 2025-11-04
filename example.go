@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 )
 
 func example() {
@@ -19,5 +18,4 @@ func example() {
 	})
 
 	queue.Close()
-	time.Sleep(1 * time.Second)
 }
