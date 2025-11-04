@@ -120,22 +120,36 @@ func (aq *AsyncQueue[T]) Close() {
 func (aq *AsyncQueue[T]) RunEventLoop() {
 	aq.logger.Println("Starting the Async Event Loop")
 
-	for {
-		task, err := aq.dequeue()
-		if err != nil {
-			start := time.Now()
-			// wait and sleep
-			<-aq.syn
-			elapsed := time.Since(start)
-			aq.logger.Printf("Event Loop waited %s.\n", elapsed)
-			continue
-		}
-
-		if task == nil {
-			aq.logger.Println("Closing the Async Event Loop")
-			break
-		}
-
-		task()
+	for aq.safeRunEventLoop() {
+		// empty body
+		// panic cannot interrupt the event loop
 	}
+}
+
+func (aq *AsyncQueue[T]) safeRunEventLoop() (result bool) {
+	result = true
+	defer func() {
+		if r := recover(); r != nil {
+			aq.logger.Println("recover from panic.")
+		}
+	}()
+
+	task, err := aq.dequeue()
+	if err != nil {
+		start := time.Now()
+		// wait and sleep
+		<-aq.syn
+		elapsed := time.Since(start)
+		aq.logger.Printf("Event Loop waited %s.\n", elapsed)
+		return
+	}
+
+	if task == nil {
+		aq.logger.Println("Closing the Async Event Loop")
+		result = false
+		return
+	}
+
+	task()
+	return
 }
