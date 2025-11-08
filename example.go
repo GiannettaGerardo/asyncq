@@ -8,7 +8,7 @@ import (
 
 func example() {
 	var queue AsyncQ[int]
-	queue = NewAsyncQueue[int](10, log.New(os.Stdout, "", 0))
+	queue = NewAsyncDoubleQueue[int](10, log.New(os.Stdout, "", 0))
 
 	go queue.RunEventLoop()
 
